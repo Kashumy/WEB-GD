@@ -1,0 +1,1021 @@
+<html onclick="document.documentElement.requestFullscreen();jump(); " >
+
+<title>Geometry dash </title>
+
+<div id="GdBoard">
+
+  <div id="player" class="player">
+
+  </div>
+
+  <div id="content"></div>
+
+</div>
+
+	<div class="joystick">	  <div class="stick"></div>
+
+	</div>
+
+<p id="fps" >lol</p>
+
+<p id="console" ></p>
+
+<nav id="nav">
+
+	Geometry Web Test Engine
+
+</nav>
+
+<style>
+
+#nav{
+
+	background: #FFFFFF;
+
+	padding :2vh;
+
+	margin :0;
+
+	position :fixed ;
+
+	top:0;
+
+	left :0;
+
+	width :calc(100vw - 4vh);
+
+	color :#000000;
+
+}
+
+#console {
+
+  position :fixed ;
+
+  top:30vh;
+
+  right: 0;
+
+}
+
+.player {
+
+  position :absolute ;
+
+  z-index :3;
+
+  width: 20px;
+
+  background: #CF7700;
+
+  height: 20px;
+
+  display :flex ;
+
+  justify-content :center ;
+
+  text-align: center ;
+
+  align-items: center ;
+
+  
+
+}
+
+.jumping{
+
+	position :absolute;
+
+	z-index :3;
+
+	width: 20px;
+
+	background: #CF7700;
+
+	height: 20px;
+
+	display :flex;
+
+	justify-content :center;
+
+	text-align: center;
+
+	align-items: center;
+
+	
+
+	animation:rotate 0.5s ;
+
+}
+
+@keyframes rotate {
+
+	0%{
+
+		transform: rotate(-362deg)
+
+	}
+
+	
+
+}
+
+body{
+
+  background :linear-gradient(to bottom, rgba(49, 0, 250, 1) 0%, rgba(47, 0, 153, 1) 100%);
+
+  
+
+  color: #17FF00 ;
+
+}
+
+#fps{
+
+  position: fixed ;
+
+  z-index :300;
+
+  top:15vw;
+
+  font-size :20px ;
+
+  color :#FFFFFF;
+
+  
+
+  left : 5vw;
+
+}
+
+		.joystick {
+
+  position: absolute ;
+
+  display: none ;
+
+  bottom :60px;
+
+  left:50px;
+
+  width: 100px;
+
+  height: 100px;
+
+  border-radius: 50%;
+
+  background-color: #67676775;
+
+}
+
+.stick {
+
+  position: absolute;
+
+  width: 50px;
+
+  height: 50px;
+
+  top: 25px;
+
+  left: 25px;
+
+  border-radius: 50%;
+
+  background-color: #FFFFFF;
+
+}
+
+#GdBoard {
+
+  width: 400px;
+
+  height: 300px;
+
+  overflow: auto;
+
+  transform: translate(-50%, -50%);
+
+  top:50vh;
+
+  left:50vw;
+
+  position :absolute ;
+
+}
+
+#content {
+
+  position: relative;
+
+  
+
+}
+
+.tile {
+
+  position: absolute;
+
+  width: 32px;
+
+  height: 32px;
+
+  background-image : linear-gradient(to bottom, rgba(62, 62, 62, 0.61) 0%, rgba(0, 0, 0, 1) 100%);;
+
+  border: 1px solid   #FFFFFF;
+
+  box-sizing: border-box;
+
+}
+
+.tile2 {
+
+  position: absolute;
+
+  width: 32px;
+
+  height: 32px;
+
+  background-color: #000CFF00;
+
+  border: 1px solid #2200FF00;
+
+  box-sizing: border-box;
+
+}
+
+</style>
+
+<script>
+
+const GdBoard = document.getElementById('GdBoard');
+
+const content = document.getElementById('content');
+
+const tileSize = 32; // Rozmiar pojedynczego kafelka
+
+const GdBoardWidth = GdBoard.clientWidth;
+
+const GdBoardHeight = GdBoard.clientHeight;
+
+const numTilesX = 999 // Liczba kafelków w osi X
+
+const numTilesY = 999; // Liczba kafelków w osi Y
+
+const contentWidth = numTilesX * tileSize;
+
+const contentHeight = numTilesY * tileSize;
+
+content.style.width = contentWidth + 'px';
+
+content.style.height = contentHeight + 'px';
+
+const numVisibleTilesX = Math.ceil(GdBoardWidth / tileSize);
+
+const numVisibleTilesY = Math.ceil(GdBoardHeight / tileSize);
+
+let startTileX = 0; // Indeks początkowego kafelka w osi X
+
+let startTileY = 0; // Indeks początkowego kafelka w osi Y
+
+const tileCache = {}; // Obiekt przechowujący kafelki w pamięci podręcznej
+
+function updateGdBoard() {
+
+  const scrollLeft = GdBoard.scrollLeft;
+
+  const scrollTop = GdBoard.scrollTop;
+
+  startTileX = Math.floor(scrollLeft / tileSize);
+
+  startTileY = Math.floor(scrollTop / tileSize);
+
+  const endTileX = startTileX + numVisibleTilesX;
+
+  const endTileY = startTileY + numVisibleTilesY;
+
+  // Usuń poprzednie kafelki spoza widoku
+
+  const visibleTiles = document.querySelectorAll('.tile, .tile2');
+
+  for (let i = 0; i < visibleTiles.length; i++) {
+
+    const tile = visibleTiles[i];
+
+    const { x, y } = tile.dataset;
+
+    if (x < startTileX || x >= endTileX || y < startTileY || y >= endTileY) {
+
+      tile.remove();
+
+    }
+
+  }
+
+let map = '';
+
+var MAP= []
+
+var ui=0;
+
+var o=0
+
+for(let ui=0;ui<999*999;ui++){
+
+	o+=1
+
+	if (o > 629 ) {
+
+		MAP.push(1);
+
+	}else {
+
+		MAP.push(0)
+
+	}
+
+}
+
+for (let x = startTileX; x < endTileX; x++) {
+
+  for (let y = startTileY; y < endTileY; y++) {
+
+    const tileKey = `${x}-${y}`;
+
+    if (!tileCache[tileKey] || !tileCache[tileKey].generated) {
+
+      let tileElement;
+
+      if (MAP[y]==1) {
+
+        tileElement = `<div class="tile" style="left:${x * tileSize}px; top:${y * tileSize}px" data-y="${y}" data-x="${x}"></div>`;
+
+      } else {
+
+        tileElement = `<div class="tile2" style="left:${x * tileSize}px; top:${y * tileSize}px" data-y="${y}" data-x="${x}"></div>`;
+
+      }
+
+      map += tileElement;
+
+      tileCache[tileKey] = {
+
+        element: tileElement,
+
+        generated: true,
+
+      };
+
+      
+
+    } else {
+
+      map += tileCache[tileKey].element;
+
+    }
+
+  }
+
+}
+
+content.innerHTML = map;
+
+constructn(); // Wywołanie funkcji constructn() po każdej iteracji wewnętrznej pętli
+
+}
+
+// Obsługa zdar
+
+// Obsługa zdarzeń przewijania
+
+GdBoard.addEventListener('scroll', updateGdBoard);
+
+// Inicjalizacja
+
+updateGdBoard();
+
+function scrollPage() {
+
+  GdBoard.scrollBy(0, 0); // Przesuń stronę o 0 pikseli w dół
+
+}
+
+setInterval(scrollPage, 1);
+
+</script>
+
+     <div id="3st" ></div> 
+
+<script>
+
+  var fps = document.getElementById("fps");
+
+var startTime = Date.now();
+
+var frame = 0;
+
+function tick() {
+
+  var time = Date.now();
+
+  frame++;
+
+  if (time - startTime > 1000) {
+
+    fps.innerHTML = (frame / ((time - startTime) / 1000)).toFixed(1);
+
+    startTime = time;
+
+    frame = 0;
+
+    
+
+  }
+
+  
+
+  window.requestAnimationFrame(tick);
+
+  movePlayer(0.05,0.03)
+
+}
+
+setTimeout(tick,200)
+
+var jum=0
+
+var can1=0
+
+function jump(){
+
+	
+
+	if(jum<10&&can1==0){
+
+		document.querySelector('.player').classList.add('jumping')
+
+	movePlayer(0,-0.2)
+
+	jum+=1;
+
+	setTimeout(rest,200)
+
+	setTimeout(jump,2)
+
+	
+
+	
+
+ }
+
+ setTimeout(jumpreset,700)
+
+}
+
+function rest(){
+
+	can1=1
+
+}
+
+function jumpreset(){
+
+	document.querySelector('.player').classList.remove('jumping')
+
+jum=0;
+
+}
+
+</script>
+
+<script>
+
+    const stick = document.querySelector('.stick');
+
+    const joystick = document.querySelector('.joystick');
+
+    const joystickRect = joystick.getBoundingClientRect();
+
+  
+
+    let isDragging = false;
+
+    let joystickX = 0;
+
+    let joystickY = 0;
+
+    var x=0
+
+    var y=0
+
+  function movright(){
+
+    movePlayer(-0.06,0)
+
+  }
+
+  function movleft() {
+
+    movePlayer(0.06,0)
+
+  }
+
+  function movup() {
+
+movePlayer(0,-0.06)
+
+  }
+
+  function movdown() {
+
+    movePlayer(0,0.06)
+
+  }
+
+    function updateJoystick(event) {
+
+      let x, y;
+
+      if (event.type === 'touchmove') {
+
+        x = event.touches[0].clientX - joystickRect.left - joystickRect.width / 2;
+
+        y = event.touches[0].clientY - joystickRect.top - joystickRect.height / 2;
+
+      } else {
+
+        x = event.clientX - joystickRect.left - joystickRect.width / 2;
+
+        y = event.clientY - joystickRect.top - joystickRect.height / 2;
+
+      }
+
+      if (x > 30) {
+
+        movleft()
+
+      }
+
+      if (x < 30) {
+
+        movright()
+
+      }
+
+  
+
+      const distance = Math.sqrt(x * x + y * y);
+
+      const angle = Math.atan2(y, x);
+
+      const maxDistance = joystickRect.width / 2 - stick.getBoundingClientRect().width / 2;
+
+      if (y < -40 && distance > 40) {
+
+        movup()
+
+      }
+
+      if (y > 40 && distance > 40) {
+
+        movdown()
+
+      }
+
+      if (distance > maxDistance) {
+
+        x = Math.cos(angle) * maxDistance;
+
+        y = Math.sin(angle) * maxDistance;
+
+      }
+
+  
+
+      stick.style.transform = `translate(${x}px, ${y}px)`;
+
+  
+
+      
+
+    }
+
+  
+
+    stick.addEventListener('mousedown', event => {
+
+      isDragging = true;
+
+      updateJoystick(event);
+
+    });
+
+  
+
+    joystick.addEventListener('mousemove', event => {
+
+      if (isDragging) {
+
+        updateJoystick(event);
+
+      }
+
+    });
+
+  
+
+    joystick .addEventListener('mouseup', () => {
+
+      isDragging = false;
+
+      stick.style.transform = 'translate(0px, 0px)';
+
+    });
+
+  
+
+    stick.addEventListener('touchstart', event => {
+
+      event.preventDefault();
+
+      isDragging = true;
+
+      updateJoystick(event);
+
+    });
+
+  
+
+    joystick.addEventListener('touchmove', event => {
+
+      event.preventDefault();
+
+      if (isDragging) {
+
+        updateJoystick(event);
+
+      }
+
+    });
+
+  
+
+    joystick .addEventListener('touchend', () => {
+
+      isDragging = false;
+
+      stick.style.transform = 'translate(0px, 0px)';
+
+    });
+
+</script>
+
+<script>
+
+const player = document.querySelector('.player');
+
+var tileSize2 = 40;
+
+let Geometryx = 10;
+
+let Geometryy =500;
+
+// Przewiń stronę do określonej pozycji
+
+GdBoard.scrollTo(Geometryx*39.9, Geometryy*39.9) 
+
+function movePlayer(dx, dy) {
+
+  Geometryx += dx;
+
+  
+
+  Geometryy += dy;
+
+  collision(dx, dy)
+
+  document.getElementById('console').innerHTML ='x:'+ Math.floor(Geometryx) +'y:'+Math.floor(Geometryy) 
+
+  
+
+  player.style.left = Geometryx * tileSize2 + 'px';
+
+  player.style.top = Geometryy * tileSize2 + 'px';
+
+  
+
+}
+
+setTimeout(move, 200)
+
+function move(){
+
+	
+
+checkIfElementExited(player, GdBoard)
+
+setTimeout(move, 200)
+
+}
+
+function checkIfElementExited(player, GdBoard) {
+
+  var elementRect = player.getBoundingClientRect();
+
+  var containerRect = GdBoard.getBoundingClientRect();
+
+  var elementTop = elementRect.top;
+
+  var elementBottom = elementRect.bottom;
+
+  var elementLeft = elementRect.left;
+
+  var elementRight = elementRect.right;
+
+  var containerTop = containerRect.top;
+
+  var containerBottom = containerRect.bottom;
+
+  var containerLeft = containerRect.left;
+
+  var containerRight = containerRect.right;
+
+  var scrollLeft = 0;
+
+  var scrollTop = 0;
+
+  var scrollBot =0
+
+  var scrollRight=0
+
+  if (elementTop < containerTop + 50) {
+
+    scrollTop = elementTop - containerTop;
+
+  } else if (elementBottom > containerBottom-50) {
+
+    scrollBot = elementBottom - containerBottom;
+
+  }
+
+  if (elementLeft < containerLeft+50) {
+
+    scrollLeft = elementLeft - containerLeft;
+
+  } else if (elementRight > containerRight-50) {
+
+    scrollRight = elementRight - containerRight;
+
+  }
+
+  if ( scrollLeft !== 0) {
+
+    GdBoard.scrollTo({
+
+      left: Geometryx*tileSize,
+
+      top: Geometryy*39.6,
+
+      behavior: 'smooth'
+
+    });
+
+  }
+
+  if (scrollRight !== 0) {
+
+    GdBoard.scrollTo({
+
+      left: Geometryx * tileSize *1.1,
+
+      top: Geometryy * 39.6,
+
+      behavior: 'smooth'
+
+  });
+
+  
+
+  
+
+  }
+
+    if (scrollTop !== 0) {
+
+    GdBoard.scrollTo({
+
+      left: Geometryx*38.8,
+
+      top: Geometryy*39.78,
+
+      behavior: 'smooth'
+
+    });
+
+    
+
+  }
+
+    if (scrollBot !== 0) {
+
+      GdBoard.scrollTo({
+
+        left: Geometryx * 32.2,
+
+        top: Geometryy * 39.66,
+
+        behavior: 'smooth'
+
+      });
+
+  
+
+    }
+
+}
+
+var tiles = document.querySelectorAll('.tile');
+
+  function constructn(){
+
+     tiles = document.querySelectorAll('.tile');
+
+    
+
+  }
+
+var topside=0
+
+function collision(dx, dy) {
+
+  for (let tile of tiles) {
+
+    const rect1 = player.getBoundingClientRect();
+
+    const rect2 = tile.getBoundingClientRect();
+
+    const wallThickness =2;
+
+    if (rect1.right > rect2.left - wallThickness && rect1.left < rect2.left && rect1.bottom > rect2.top && rect1.top < rect2.bottom) {
+
+    
+
+    
+
+    
+
+      // blokuje poruszanie x
+
+    
+
+      Geometryx -= 0.06;
+
+    
+
+    
+
+      player.style.left = Geometryx * tileSize + 'px';
+
+      player.style.top = Geometryy * tileSize + 'px';
+
+    
+
+      collide = 1
+
+      return;
+
+    }
+
+if (rect1.bottom > rect2.top + 5 &&
+
+      rect1.top < rect2.bottom - 10 &&
+
+      rect1.right > rect2.left + 5 &&
+
+      rect1.left < rect2.right - 5) {
+
+        console.log("oh")
+
+topside=0;
+
+Geometryy -=0.1;
+
+Geometryx -=0.3;
+
+} if (rect1.left < rect2.right + wallThickness && rect1.right > rect2.right && rect1.bottom > rect2.top + wallThickness && rect1.top < rect2.bottom - wallThickness) {
+
+    
+
+    
+
+      // blokuje poruszanie x
+
+      
+
+      Geometryx += 0.06;
+
+      
+
+      player.style.left = Geometryx * tileSize + 'px';
+
+      player.style.top = Geometryy * tileSize + 'px';
+
+    
+
+      collide = 1
+
+      return;
+
+} 
+
+    
+
+    if (rect1.top < rect2.bottom + 8 && rect1.bottom > rect2.bottom + 2 && rect1.right > rect2.left&& rect1.left < rect2.right ) {
+
+    
+
+      Geometryy +=  0.06;
+
+      // blokuje poruszanie x
+
+      spgrav = 0
+
+     
+
+      player.style.left = Geometryx * tileSize + 'px';
+
+      player.style.top = Geometryy * tileSize + 'px';
+
+    
+
+      collide = 1
+
+      return;
+
+    }if (rect1.bottom > rect2.top - wallThickness && rect1.top < rect2.top && rect1.right > rect2.left + wallThickness && rect1.left < rect2.right - wallThickness) {
+
+            
+
+          Geometryy -=   0.06;
+
+          console.log("ok")
+
+          // blokuje      poruszanie x
+
+          spgrav = 0
+
+          
+
+          player.style.left = Geometryx * tileSize + 'px';
+
+          player.style.top = Geometryy * tileSize + 'px';
+
+      can1=0
+
+          collide = 1
+
+          return;
+
+        }else{
+
+          
+
+        }
+
+        
+
+      if (player.x < rect2.x && player.y + 55 > rect2.y && player.y < rect2.y + 55) {
+
+        rect2.x = player.x - 50;
+
+      }
+
+        if (rect1.bottom + 5 >= rect2.top &&
+
+          rect1.top < rect2.bottom &&
+
+          rect1.right > rect2.left &&
+
+          rect1.left < rect2.right) {
+
+          collide = 1;
+
+      
+
+          cav = 0
+
+          return;
+
+        } else {
+
+          collide = 0;
+
+      
+
+        }
+
+  }
+
+}
+
+</script>
